@@ -1,0 +1,36 @@
+{
+	"tileGroups": [{
+			"groupName": "PASSABLE",
+			"indexBegin": 0,
+			"indexEnd": 141,
+			"extension": "png",
+			"path": "resources/images/world/ground",
+			"width": 82,
+			"height": 41
+		}, {
+			"groupName": "IMPASSABLE",
+			"indexBegin": 0,
+			"indexEnd": 141,
+			"extension": "png",
+			"path": "resources/images/world/ground",
+			"width": 82,
+			"height": 41
+		}, {
+			"groupName": "CHARACTERS",
+			"indexBegin": 1,
+			"indexEnd": 27,
+			"extension": "gif",
+			"path": "resources/images/characters",
+			"width": 82,
+			"height": 82
+		}, {
+			"groupName": "NPCS",
+			"indexBegin": 1,
+			"indexEnd": 34,
+			"extension": "gif",
+			"path": "resources/images/npc",
+			"width": 82,
+			"height": 82
+		}
+	]
+}
