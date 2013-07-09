@@ -1,6 +1,7 @@
 import device;
 
 import isometric.Isometric as Isometric;
+import isometric.models.item.SpawnerModel as SpawnerModel;
 
 import menus.views.components.ButtonView as ButtonView;
 import ui.TextView as TextView;
@@ -13,9 +14,9 @@ import src.settings.ItemSettings as itemSettings;
 
 import src.models.CharacterModel as CharacterModel;
 
+import src.views.BattleView as BattleView;
+
 import src.constants.GameConstants as gameConstants;
-
-
 
 exports = Class(GC.Application, function() {
 	this.initUI = function() {
@@ -80,9 +81,13 @@ exports = Class(GC.Application, function() {
 
 		this._isometric
 			.on('Ready', bind(this, 'onReady'))
-			.on('Edit', bind(this, 'onEdit'));
+			.on('Edit', bind(this, 'onEdit'))
+			.on('AddDynamicModel', bind(this, 'onAddDynamicModel'))
+			.on('Battle', bind(this, 'onBattle'));
 
 		this._isometric.setTool(false);
+
+		this._battleView = new BattleView({visible: false});		
 
 		// this._isometric.putDynamicItem(CharacterModel, {tileX: 9, tileY: 9});
 		// var map = this._isometric.getMap();
@@ -94,10 +99,22 @@ exports = Class(GC.Application, function() {
 		// 	[15, 15, 15]
 		// ]);
 	};
+
+	this.onBattle = function() {
+		console.log("YARRR");
+		this._battleView.show();
+	};
+
+	this.onAddDynamicModel = function(model) {
+		console.log(model);
+		model.on('Battle', bind(this, 'onBattle'));
+	};
+
 	this.onReady = function() {
 
 		var map = this._isometric.getMap();
 		map.getTile(0, 9)[0].index = 1;
+		map.getTile(9, 18)[0].index = 1;
 
 		this._character = this._isometric.putDynamicItem(CharacterModel, {
 			tileX: 0,
@@ -112,8 +129,11 @@ exports = Class(GC.Application, function() {
 				]
 			}
 		});
+
+		this._door = this._isometric.putItem('door', 9, 18, {target: this._character});
 		
-		this._isometric.refreshMap(0, 9);		
+		this._isometric.refreshMap();	
+
 	};
 
 	this.onEdit = function(selection) {

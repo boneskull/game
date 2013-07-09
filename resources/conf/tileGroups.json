@@ -31,6 +31,14 @@
 			"path": "resources/images/npc",
 			"width": 82,
 			"height": 82
+		}, {
+			"groupName": "CHANGE_ZONES",
+			"indexBegin": 1,
+			"indexEnd": 12,
+			"extension": "gif",
+			"path": "resources/images/change_zones",
+			"width": 82,
+			"height": 82
 		}
 	]
 }

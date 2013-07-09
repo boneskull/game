@@ -6,7 +6,8 @@ exports = {
 		'PASSABLE',
 		'IMPASSABLE',
 		'CHARACTERS',
-		'NPCS'
+		'NPCS',
+		'CHANGE_ZONES'
 		)
 
 }
