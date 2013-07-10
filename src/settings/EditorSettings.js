@@ -1,4 +1,5 @@
 import isometric.models.item.SpawnerModel as SpawnerModel;
+import isometric.models.item.StaticModel as StaticModel;
 
 import src.models.CharacterModel as CharacterModel;
 import src.models.MonsterModel as MonsterModel;
@@ -18,10 +19,17 @@ exports = {
 			]
 		}
 	},
+	range: {
+		type: 'item',
+		layer: 1,
+		group: gameConstants.tileGroups.CURSORS,
+		index: 2,
+		model: StaticModel
+	},
 	door: {
 		type: 'item',
 		model: DoorModel,
-		layer: 1,
+		layer: 2,
 		group: gameConstants.tileGroups.CHANGE_ZONES,
 		index: 7,
 		// Information about the models which are spawned:
@@ -34,7 +42,8 @@ exports = {
 					ctor: MonsterModel,
 					opts: {
 						item: 'monster'
-					}
+					},
+					layer: 2
 				},
 			],
 			// Condition for finding a valid path:

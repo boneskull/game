@@ -12,3 +12,4 @@ exports.getAdjacentMatrix = function(destTileX, destTileY) {
 		[destTileX + 1, destTileY + 1]
 	];
 };
+

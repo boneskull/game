@@ -18,6 +18,8 @@ import src.views.BattleView as BattleView;
 
 import src.constants.GameConstants as gameConstants;
 
+import src.util as util;
+
 exports = Class(GC.Application, function() {
 	this.initUI = function() {
 		this.engine.updateOpts({
@@ -83,11 +85,14 @@ exports = Class(GC.Application, function() {
 			.on('Ready', bind(this, 'onReady'))
 			.on('Edit', bind(this, 'onEdit'))
 			.on('AddDynamicModel', bind(this, 'onAddDynamicModel'))
+			.on('AddStaticModel', bind(this, 'onAddStaticModel'))
 			.on('Battle', bind(this, 'onBattle'));
 
 		this._isometric.setTool(false);
 
-		this._battleView = new BattleView({visible: false});		
+		this._battleView = new BattleView({
+			visible: false
+		});
 
 		// this._isometric.putDynamicItem(CharacterModel, {tileX: 9, tileY: 9});
 		// var map = this._isometric.getMap();
@@ -100,12 +105,18 @@ exports = Class(GC.Application, function() {
 		// ]);
 	};
 
+	this.onAddStaticModel = function(model) {
+		console.log('adding static model');
+		console.log(model);
+	};
+
 	this.onBattle = function() {
 		console.log("YARRR");
 		this._battleView.show();
 	};
 
 	this.onAddDynamicModel = function(model) {
+		console.log('added');
 		console.log(model);
 		model.on('Battle', bind(this, 'onBattle'));
 	};
@@ -119,7 +130,9 @@ exports = Class(GC.Application, function() {
 		this._character = this._isometric.putDynamicItem(CharacterModel, {
 			tileX: 0,
 			tileY: 9,
-			item: 'character',
+			visible: true,
+			item: 'warrior',
+			range: itemSettings.warrior.range,
 			conditions: {
 				accept: [{
 						layer: 0,
@@ -128,11 +141,13 @@ exports = Class(GC.Application, function() {
 					}
 				]
 			}
+		}, 2);
+
+		this._door = this._isometric.putItem('door', 9, 18, {
+			target: this._character
 		});
 
-		this._door = this._isometric.putItem('door', 9, 18, {target: this._character});
-		
-		this._isometric.refreshMap();	
+		this._isometric.refreshMap();
 
 	};
 
@@ -163,8 +178,30 @@ exports = Class(GC.Application, function() {
 	 * Select a tool...
 	 */
 	this.onTool = function(index) {
+		var matrix = util.getAdjacentMatrix(this._character.getTileX(), this._character.getTileY()),
+			i,
+			isometric = this._isometric;
+
+		this._ranges = [];
 		this._isometric.setTool(index ? this._tools[index].toLowerCase() : false);
 		this._modeText.setText(this._tools[index]);
+
+		if (index) {
+			matrix = matrix.filter(function(point) {
+				return isometric.getMap().getTile(point[0], point[1])[0].group ===
+					gameConstants.tileGroups.PASSABLE;
+			});
+
+			i = matrix.length;
+
+			while (i--) {
+				this._isometric.putItem('range', matrix[i][0], matrix[i][1], {});
+			}
+
+			this._isometric.refreshMap();
+		}
+
+
 	};
 
 });

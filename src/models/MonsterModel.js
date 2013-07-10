@@ -1,10 +1,14 @@
 import isometric.models.item.DynamicModel as DynamicModel;
 
+import util.underscore as underscore;
+
 import math.geom.Rect as Rect;
 
 import src.util as util;
 
 import src.views.BattleView as BattleView;
+
+import src.constants.GameConstants as gameConstants;
 
 var MonsterModel = Class(DynamicModel, function(supr) {
 	this.init = function(opts) {
@@ -17,7 +21,7 @@ var MonsterModel = Class(DynamicModel, function(supr) {
 		target = this._opts.spawner.getTarget();
 		this.moveAdjacent(target.getTileX(), target.getTileY());
 	};
-	
+
 	this.onReachTarget = function() {
 		this.emit('Battle');
 	};
@@ -25,47 +29,71 @@ var MonsterModel = Class(DynamicModel, function(supr) {
 
 MonsterModel.prototype.moveAdjacent = function(destTileX, destTileY, x, y) {
 	var matrix = util.getAdjacentMatrix(destTileX, destTileY),
-		that = this;
+		that = this,
+		gridModel = this._gridModel,
 
-	function tryPath(i) {
-		var paths = [],
-			path;
+		i,
+		distance = 0,
+		minDistance = 0,
+		maxDistance = 0,
+		closestTile, furthestTile, min, max, paths = [];
 
+	function tryPath(point) {
 		return function(path) {
 			paths.push(path);
-			console.log("found path " + (i+1) + "/8");
-
-			if (i === matrix.length - 1) {
+			if (paths.length === 2) {
 				paths.sort(function(a, b) {
 					return a.length < b.length;
-				}).filter(function(path) {
-					return path.length;
 				});
-				if(!paths.length) {
-					console.log('uh oh, no path');
+				paths = paths.filter(function(path) {
+					return !!path.length;
+				});
+				if (!paths.length) {
+					console.log('no path to hero');
 					return;
 				}
-				path = paths[0];				
+				that._destTileX = point[0];
+				that._destTileY = point[1];
 				that._destX = (x === undefined) ? 0.5 : x;
 				that._destY = (y === undefined) ? 0.5 : y;
 
 				that._reachedX = false;
 				that._reachedY = false;
-				that._destTileX = matrix[i][0];
-				that._destTileY = matrix[i][1];
-				that.setPath(path);
 
-			} else {
-
-				that._gridModel.findPath(that.getTileX(), that.getTileY(), matrix[i + 1][0], matrix[i + 1][1],
-					that._conditions, tryPath(i + 1));
+				that.setPath(paths[0]);
 			}
 		};
+
 	}
 
-	this._gridModel.findPath(this.getTileX(), this.getTileY(), matrix[0][0], matrix[0][1], this._conditions,
-		tryPath(0));
+	// get only passable tiles
+	matrix.filter(function(point) {
+		return gridModel.getMap().getTile(point[0], point[1]).group ===
+			gameConstants.tileGroups.PASSABLE;
+	});
 
+	i = matrix.length;
+
+	// get closest tile
+	while (i--) {
+		distance = Math.pow(this.getTileX() - matrix[i][0], 2) + Math.pow(this.getTileY() - matrix[i][1], 2);
+		min = Math.min(distance, minDistance);
+		max = Math.max(distance, maxDistance);
+		if (min <= minDistance) {
+			minDistance = min;
+			closestTile = matrix[i];
+
+		}
+		if (max >= maxDistance) {
+			maxDistance = max;
+			furthestTile = matrix[i];
+		}
+	}
+
+	gridModel.findPath(this.getTileX(), this.getTileY(), closestTile[0], closestTile[1], this._conditions,
+		tryPath(closestTile));
+	gridModel.findPath(this.getTileX(), this.getTileY(), furthestTile[0], furthestTile[1], this._conditions,
+		tryPath(furthestTile));
 
 };
 

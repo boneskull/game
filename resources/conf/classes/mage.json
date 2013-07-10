@@ -1,0 +1,10 @@
+{
+	"mage": {
+		"range": 3,
+		"images": ["resources/images/characters/0002.gif"],
+		"width": 82,
+		"height": 82,
+		"offsetX": -41,
+		"offsetY": -82
+	}
+}

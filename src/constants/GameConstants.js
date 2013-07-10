@@ -7,7 +7,8 @@ exports = {
 		'IMPASSABLE',
 		'CHARACTERS',
 		'NPCS',
-		'CHANGE_ZONES'
+		'CHANGE_ZONES',
+		'CURSORS'
 		)
 
 }

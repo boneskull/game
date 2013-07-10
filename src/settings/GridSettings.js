@@ -1,7 +1,8 @@
 exports = {
 	tileWidth: 82,
 	tileHeight: 41,
-	layers: [{}, {
+	layers: [{}, {			
+		}, {
 			dynamicViews: 30
 		}
 	]
