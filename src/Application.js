@@ -179,26 +179,29 @@ exports = Class(GC.Application, function() {
 	 */
 	this.onTool = function(index) {
 		var matrix = util.getAdjacentMatrix(this._character.getTileX(), this._character.getTileY()),
-			i,
+			i, point,
 			isometric = this._isometric;
 
 		this._ranges = [];
-		this._isometric.setTool(index ? this._tools[index].toLowerCase() : false);
+		isometric.setTool(index ? this._tools[index].toLowerCase() : false);
 		this._modeText.setText(this._tools[index]);
 
 		if (index) {
-			matrix = matrix.filter(function(point) {
-				return isometric.getMap().getTile(point[0], point[1])[0].group ===
-					gameConstants.tileGroups.PASSABLE;
-			});
+			// matrix = matrix.filter(function(point) {
+			// 	return isometric.getMap().getTile(point[0], point[1])[0].group ===
+			// 		gameConstants.tileGroups.PASSABLE;
+			// });
 
-			i = matrix.length;
+			// i = matrix.length;
 
-			while (i--) {
-				this._isometric.putItem('range', matrix[i][0], matrix[i][1], {});
-			}
+			// while (i--) {
+			// 	this._isometric.putItem('range', matrix[i][0], matrix[i][1], {});
+			// }
 
-			this._isometric.refreshMap();
+			// var points = this._character.getPointsInRange();
+
+			this._character.drawRange();
+			isometric.refreshMap();
 		}
 
 

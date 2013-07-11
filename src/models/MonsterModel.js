@@ -38,6 +38,7 @@ MonsterModel.prototype.moveAdjacent = function(destTileX, destTileY, x, y) {
 		maxDistance = 0,
 		closestTile, furthestTile, min, max, paths = [];
 
+	// this is broken.
 	function tryPath(point) {
 		return function(path) {
 			paths.push(path);
