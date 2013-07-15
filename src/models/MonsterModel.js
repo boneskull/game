@@ -77,7 +77,7 @@ MonsterModel.prototype.moveAdjacent = function(destTileX, destTileY, x, y) {
 
 	// get closest tile
 	while (i--) {
-		distance = Math.pow(this.getTileX() - matrix[i][0], 2) + Math.pow(this.getTileY() - matrix[i][1], 2);
+		distance = Math.sqrt(Math.pow(this.getTileX() - matrix[i][0], 2) + Math.pow(this.getTileY() - matrix[i][1], 2));
 		min = Math.min(distance, minDistance);
 		max = Math.max(distance, maxDistance);
 		if (min <= minDistance) {

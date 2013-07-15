@@ -14,11 +14,6 @@ exports = {
 		offsetX: -41,
 		offsetY: -82,
 		images: ['resources/images/npc/0024.gif']
-	},
-	range: {
-		width: 82,
-		height: 41,
-		images: ['resources/images/cursorTile.png']
 	}
 };
 
