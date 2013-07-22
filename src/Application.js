@@ -192,9 +192,8 @@ exports = Class(GC.Application, function () {
         this._modeText.setText(this._tools[index]);
 
         if (index) {
-            this._character.drawRange().then(function() {
-                isometric.refreshMap();
-            });
+            this._character.drawRange();
+            isometric.refreshMap();
         } else {
             this._character.clearRange();
             isometric.refreshMap();

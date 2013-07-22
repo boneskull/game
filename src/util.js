@@ -18,3 +18,6 @@ exports.mod = function mod (m, n) {
     return ((m % n) + n) % n;
 };
 
+exports.pointstr = function pointstr(x, y) {
+    return '(' + x + ',' + y + ')';
+};

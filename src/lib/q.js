@@ -35,7 +35,7 @@
     // Common/Node/RequireJS, the module exports the Q API and when
     // executed as a simple <script>, it creates a Q global instead.
 
-    exports = definition();
+    exports = definition()._;
     return;
 
     // Montage Require
