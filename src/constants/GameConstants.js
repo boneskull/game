@@ -9,6 +9,14 @@ exports = {
 		'NPCS',
 		'CHANGE_ZONES',
 		'CURSORS'
-		)
+		),
 
+    abilities: [
+        'STR',
+        'DEX',
+        'CON',
+        'INT',
+        'WIS',
+        'CHA'
+    ]
 }

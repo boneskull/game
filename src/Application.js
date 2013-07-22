@@ -14,9 +14,9 @@ import src.settings.ItemSettings as itemSettings;
 
 import src.models.CharacterModel as CharacterModel;
 
-import src.views.BattleView as BattleView;
-
 import src.constants.GameConstants as gameConstants;
+
+import src.classes.Character as Character;
 
 import src.util as util;
 
@@ -48,7 +48,7 @@ exports = Class(GC.Application, function () {
         }).generate().show();
 
         // Create the tool buttons:
-        this._tools = ['Drag', 'MoveTo'];
+        this._tools = ['Drag', 'MoveTo', 'Select'];
         for (i = 0; i < 2; i++) {
             new ButtonView({
                 superview: this,
@@ -90,15 +90,6 @@ exports = Class(GC.Application, function () {
             .on('Battle', bind(this, 'onBattle'));
 
         this._isometric.setTool(false);
-
-        this._battleView = new BattleView({
-            visible: false
-        });
-
-        // this._isometric.putDynamicItem(CharacterModel, {tileX: 9, tileY: 9});
-        // var map = this._isometric.getMap();
-
-        // this would draw a rectangle.
     };
 
     this.onAddStaticModel = function onAddStaticModel(model) {
@@ -108,7 +99,7 @@ exports = Class(GC.Application, function () {
 
     this.onBattle = function onBattle() {
         console.log("YARRR");
-//        this._battleView.show();
+
     };
 
     this.onAddDynamicModel = function onAddDynamicModel(model) {
@@ -122,12 +113,16 @@ exports = Class(GC.Application, function () {
         map.getTile(1, 9)[0].index = 1;
         map.getTile(9, 17)[0].index = 1;
 
+        this._c = new Character({klass: 'warrior'});
+
+
         this._character = this._isometric.putDynamicItem(CharacterModel, {
             tileX: 1,
             tileY: 9,
             visible: true,
             item: 'warrior',
             range: itemSettings.warrior.range,
+            character: this._c,
             conditions: {
                 accept: [
                     {
@@ -152,6 +147,7 @@ exports = Class(GC.Application, function () {
         map.drawLineVertical(0, 18, 0, 18, gameConstants.tileGroups.IMPASSABLE,
             concrete_line);
 
+        this._isometric.setTool(false);
         this._isometric.refreshMap();
 
     };
@@ -191,16 +187,29 @@ exports = Class(GC.Application, function () {
         isometric.setTool(index ? this._tools[index].toLowerCase() : false);
         this._modeText.setText(this._tools[index]);
 
-        if (index) {
-            this._character.drawRange();
-            isometric.refreshMap();
-        } else {
-            this._character.clearRange();
-            isometric.refreshMap();
+        switch(index) {
+            case 1:
+                this._character.drawRange();
+                isometric.refreshMap();
+                break;
+            case 2:
+                this.showInfo(this._character);
+                break;
+            default:
+                this._character.clearRange();
+                isometric.refreshMap();
+                break;
+
         }
 
+    };
 
+    this.showInfo = function showInfo(c) {
+        import menus.views.TextDialogView as TextDialogView;
 
+        new TextDialogView({
+
+        })
     };
 
 });
