@@ -1,32 +1,27 @@
 import isometric.models.item.DynamicModel as DynamicModel;
-import isometric.models.GridModel as GridModel;
+
+import math.util as mathUtil;
+
+import util.underscore as _;
+
+import src.lib.astar as astar;
+import src.lib.graph as graph;
 
 import src.util as util;
 
 import src.constants.GameConstants as gameConstants;
 
-import src.settings.GridSettings as gridSettings;
-import src.settings.EditorSettings as editorSettings;
-import src.settings.MapSettings as mapSettings;
-
-import math.util as mathUtil;
-
-import src.lib.q as q;
-import src.lib.astar as astar;
-import src.lib.graph as graph;
-
-import util.underscore as _;
 
 var CharacterModel = Class(DynamicModel, function (supr) {
 
-    this.init = function init (opts) {
+    this.init = function init(opts) {
         supr(this, 'init', [opts]);
         this._speed = 7.5;
         this._range = opts.range;
         this._gridModel.getMap()._character = this;
     };
 
-    this.drawRange = function drawRange () {
+    this.drawRange = function drawRange() {
 
         var path;
         var j;
