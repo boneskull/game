@@ -11,6 +11,7 @@ import src.util as util;
 
 import src.constants.GameConstants as gameConstants;
 
+var LAYER = 2;
 
 var CharacterModel = Class(DynamicModel, function (supr) {
 
@@ -89,7 +90,7 @@ var CharacterModel = Class(DynamicModel, function (supr) {
             point = points[i];
             path = astar.search(g.nodes, g.nodes[tileX][tileY], g.nodes[point[0]][point[1]]);
             if (path.length && path.length <= this._range) {
-                map.drawTile(1, point[0], point[1], gameConstants.tileGroups.CURSORS, 2);
+                map.drawTile(LAYER, point[0], point[1], gameConstants.tileGroups.CURSORS, 2);
             }
         }
 
@@ -97,7 +98,7 @@ var CharacterModel = Class(DynamicModel, function (supr) {
     };
 
     this.clearRange = function clearRange() {
-        this._gridModel.getMap().clearLayer(1);
+        this._gridModel.getMap().clearLayer(LAYER);
     };
 
 });

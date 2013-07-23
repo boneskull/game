@@ -3,7 +3,7 @@ exports = {
 	tileHeight: 41,
     width: 18,
     height: 18,
-	layers: [{}, {
+	layers: [{}, {}, {
             selectionLayer: true
 		}, {
 			dynamicViews: 30

@@ -15,24 +15,17 @@ exports = {
         conditions: {
             accept: [
                 {
-                    layer: 1,
+                    layer: 2,
                     type: 'group',
                     groups: [gameConstants.tileGroups.CURSORS]
                 }
             ]
         }
     },
-    range: {
-        type: 'item',
-        layer: 1,
-        group: gameConstants.tileGroups.CURSORS,
-        index: 2,
-        model: StaticModel
-    },
     door: {
         type: 'item',
         model: DoorModel,
-        layer: 2,
+        layer: 3,
         group: gameConstants.tileGroups.CHANGE_ZONES,
         index: 7,
         // Information about the models which are spawned:
@@ -46,7 +39,7 @@ exports = {
                     opts: {
                         item: 'monster'
                     },
-                    layer: 2
+                    layer: 3
                 }
             ],
             // Condition for finding a valid path:

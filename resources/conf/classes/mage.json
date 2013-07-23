@@ -5,6 +5,10 @@
 		"width": 82,
 		"height": 82,
 		"offsetX": -41,
-		"offsetY": -82
+		"offsetY": -82,
+        "HD": 4,
+        "BAB": 0,
+        "abilityPriority": ["INT", "CON", "DEX", "WIS", "CHA", "STR"]
+
 	}
 }

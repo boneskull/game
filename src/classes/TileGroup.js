@@ -10,15 +10,27 @@ var TileGroup = Class(function() {
 	};
 });
 
-TileGroup.prototype._computeImages = function() {
-	var i = this.indexEnd,
-		images = [];
-	while (i-- && i >= this.indexBegin) {
-		images.push({
-			index: i,
-			url: sprintf.sprintf('%s/%s.%s', this.path, pad(i, 4, '0'), this.extension)
-		})
-	}
+TileGroup.prototype._computeImages = function () {
+    var i = this.indexEnd,
+        images = [], random = this.random, o = {
+            index: 0,
+            url: []
+        };
+    if (random) {
+        while (i-- && i >= this.indexBegin) {
+            o.url.push(sprintf.sprintf('%s/%s.%s', this.path, pad(i, 4, '0'), this.extension))
+        }
+        return [o];
+    }
+    else {
+        while (i-- && i >= this.indexBegin) {
+            images.push({
+                index: i,
+                url: sprintf.sprintf('%s/%s.%s', this.path, pad(i, 4, '0'), this.extension)
+            })
+        }
+
+    }
 	return images;
 };
 

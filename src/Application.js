@@ -4,6 +4,8 @@ import isometric.Isometric as Isometric;
 import isometric.models.item.SpawnerModel as SpawnerModel;
 
 import menus.views.components.ButtonView as ButtonView;
+import menus.views.TextDialogView as TextDialogView;
+
 import ui.TextView as TextView;
 
 import src.settings.TileSettings as tileSettings;
@@ -17,10 +19,13 @@ import src.models.CharacterModel as CharacterModel;
 import src.constants.GameConstants as gameConstants;
 
 import src.classes.Character as Character;
+import src.classes.NPC as NPC;
+import src.classes.Combat as Combat;
 
 import src.util as util;
 
-exports = Class(GC.Application, function () {
+exports = Game = Class(GC.Application, function () {
+
     this.initUI = function initUI() {
         var i;
         this.engine.updateOpts({
@@ -34,7 +39,7 @@ exports = Class(GC.Application, function () {
             resizeRootView: false,
             preload: ['resources/images']
         });
-
+        console.log(mapSettings);
         this.scaleUI();
 
         // Create an instance of Isometric, this class wraps the isometric models and views.
@@ -48,8 +53,8 @@ exports = Class(GC.Application, function () {
         }).generate().show();
 
         // Create the tool buttons:
-        this._tools = ['Drag', 'MoveTo', 'Select'];
-        for (i = 0; i < 2; i++) {
+        this._tools = ['Drag', 'MoveTo', 'Attack'];
+        for (i = 0; i < this._tools.length; i++) {
             new ButtonView({
                 superview: this,
                 x: 20 + i * 185,
@@ -85,131 +90,174 @@ exports = Class(GC.Application, function () {
         this._isometric
             .on('Ready', bind(this, 'onReady'))
             .on('Edit', bind(this, 'onEdit'))
-            .on('AddDynamicModel', bind(this, 'onAddDynamicModel'))
-            .on('AddStaticModel', bind(this, 'onAddStaticModel'))
-            .on('Battle', bind(this, 'onBattle'));
+            .on('Message', bind(this, 'onMessage'))
+            .on('Combat', bind(this, 'onCombat'));
 
         this._isometric.setTool(false);
-    };
-
-    this.onAddStaticModel = function onAddStaticModel(model) {
-        console.log('adding static model');
-
-    };
-
-    this.onBattle = function onBattle() {
-        console.log("YARRR");
-
-    };
-
-    this.onAddDynamicModel = function onAddDynamicModel(model) {
-        model.on('Battle', bind(this, 'onBattle'));
-    };
-
-    this.onReady = function onReady() {
-
-        var map = this._isometric.getMap(),
-            concrete_line = [11, 11, 11];;
-        map.getTile(1, 9)[0].index = 1;
-        map.getTile(9, 17)[0].index = 1;
-
-        this._c = new Character({klass: 'warrior'});
-
-
-        this._character = this._isometric.putDynamicItem(CharacterModel, {
-            tileX: 1,
-            tileY: 9,
-            visible: true,
-            item: 'warrior',
-            range: itemSettings.warrior.range,
-            character: this._c,
-            conditions: {
-                accept: [
-                    {
-                        layer: 0,
-                        type: 'group',
-                        groups: [gameConstants.tileGroups.PASSABLE]
-                    }
-                ]
-            }
-        }, 2);
-
-        this._door = this._isometric.putItem('door', 9, 17, {
-            target: this._character
-        });
-
-        map.drawLineHorizontal(0, 0, 0, 18, gameConstants.tileGroups.IMPASSABLE,
-            concrete_line);
-        map.drawLineHorizontal(0, 18, 0, 18, gameConstants.tileGroups.IMPASSABLE,
-            concrete_line);
-        map.drawLineVertical(0, 0, 0, 18, gameConstants.tileGroups.IMPASSABLE,
-            concrete_line);
-        map.drawLineVertical(0, 18, 0, 18, gameConstants.tileGroups.IMPASSABLE,
-            concrete_line);
-
-        this._isometric.setTool(false);
-        this._isometric.refreshMap();
-
-    };
-
-    this.onEdit = function onEdit(selection) {
-        this._character.moveTo(selection.rect.x, selection.rect.y);
-        this._isometric.setTool(false);
-        this._character.clearRange();
-        this._isometric.refreshMap();
-
-    };
-
-    this.scaleUI = function scaleUI() {
-
-        if (device.height > device.width) {
-            this.baseWidth = 576;
-            this.baseHeight = device.height * (576 / device.width);
-            this.scale = device.width / this.baseWidth;
-        } else {
-            this.baseWidth = 1024;
-            this.baseHeight = device.height * (1024 / device.width);
-            this.scale = device.height / this.baseHeight;
-        }
-        this.view.style.scale = this.scale;
-    };
-
-    this.tick = function tick(dt) {
-        this._isometric.tick(dt);
-    };
-
-    /**
-     * Select a tool...
-     */
-    this.onTool = function onTool(index) {
-        var isometric = this._isometric;
-
-        isometric.setTool(index ? this._tools[index].toLowerCase() : false);
-        this._modeText.setText(this._tools[index]);
-
-        switch(index) {
-            case 1:
-                this._character.drawRange();
-                isometric.refreshMap();
-                break;
-            case 2:
-                this.showInfo(this._character);
-                break;
-            default:
-                this._character.clearRange();
-                isometric.refreshMap();
-                break;
-
-        }
-
-    };
-
-    this.showInfo = function showInfo(c) {
-        import menus.views.TextDialogView as TextDialogView;
-
-        new TextDialogView({
-
-        })
     };
 
 });
+
+
+Game.prototype.onCombat = function onBattle() {
+    console.log("YARRR");
+};
+
+Game.prototype.onReady = function onReady() {
+
+    var map = this._isometric.getMap(),
+        concrete_line = [11, 11, 11];
+    map.getTile(1, 9)[0].index = 1;
+    map.getTile(1, 10)[0].index = 1;
+//        map.getTile(9, 17)[0].index = 1;
+
+
+    this._character = this._isometric.putDynamicItem(CharacterModel, {
+        tileX: 1,
+        tileY: 9,
+        visible: true,
+        item: 'warrior',
+        range: itemSettings.warrior.range,
+        conditions: {
+            accept: [
+                {
+                    layer: 0,
+                    type: 'group',
+                    groups: [gameConstants.tileGroups.PASSABLE]
+                }
+            ]
+        }
+    }, 3);
+
+    this._npc = this._isometric.putDynamicItem(CharacterModel, {
+        tileX: 1,
+        tileY: 10,
+        visible: true,
+        item: 'mage',
+        range: itemSettings.mage.range,
+        conditions: {
+            accept: [
+                {
+                    layer: 0,
+                    type: 'group',
+                    groups: [gameConstants.tileGroups.PASSABLE]
+                }
+            ]
+        }
+    }, 3);
+
+    this.character = new Character({klass: 'warrior', model: this._character});
+    var message = bind(this, 'onMessage');
+
+    this.npc = new NPC({klass: 'mage', model: this._npc})
+        .on('Disabled', message)
+        .on('Dying', message)
+        .on('Dead', message);
+//
+//        this._door = this._isometric.putItem('door', 9, 17, {
+//            target: this._character
+//        });
+
+    map.drawLineHorizontal(0, 0, 0, 18, gameConstants.tileGroups.IMPASSABLE,
+        concrete_line);
+    map.drawLineHorizontal(0, 18, 0, 18, gameConstants.tileGroups.IMPASSABLE,
+        concrete_line);
+    map.drawLineVertical(0, 0, 0, 18, gameConstants.tileGroups.IMPASSABLE,
+        concrete_line);
+    map.drawLineVertical(0, 18, 0, 18, gameConstants.tileGroups.IMPASSABLE,
+        concrete_line);
+
+    this._isometric.setTool(false);
+    this._isometric.refreshMap();
+
+};
+
+Game.prototype.onEdit = function onEdit(selection) {
+    this._character.moveTo(selection.rect.x, selection.rect.y);
+    this._isometric.setTool(false);
+    this._character.clearRange();
+    this._isometric.refreshMap();
+
+};
+
+Game.prototype.scaleUI = function scaleUI() {
+
+    if (device.height > device.width) {
+        this.baseWidth = 576;
+        this.baseHeight = device.height * (576 / device.width);
+        this.scale = device.width / this.baseWidth;
+    } else {
+        this.baseWidth = 1024;
+        this.baseHeight = device.height * (1024 / device.width);
+        this.scale = device.height / this.baseHeight;
+    }
+    this.view.style.scale = this.scale;
+};
+
+Game.prototype.tick = function tick(dt) {
+    this._isometric.tick(dt);
+};
+
+/**
+ * Select a tool...
+ */
+Game.prototype.onTool = function onTool(index) {
+    var isometric = this._isometric;
+
+    isometric.setTool(index ? this._tools[index].toLowerCase() : false);
+    this._modeText.setText(this._tools[index]);
+
+    switch (index) {
+        case 1:
+            this._character.drawRange();
+            isometric.refreshMap();
+            break;
+        case 2:
+            this.initiateCombat();
+            break;
+        default:
+            this._character.clearRange();
+            isometric.refreshMap();
+            break;
+
+    }
+
+};
+
+Game.prototype.initiateCombat = function () {
+
+    this._isometric.emit('Combat');
+    var message = bind(this, 'onMessage');
+    var c = new Combat(this.character, this.npc)
+        .on('Miss', message)
+        .on('Hit', message)
+        .on('OutOfRange', message);
+
+
+    c.begin();
+
+    c.end();
+};
+
+Game.prototype.onMessage = function (title, msg) {
+
+    new TextDialogView({
+        superview: this,
+        title: title,
+        text: msg,
+        width: 800,
+        modal: true,
+        buttons: [
+            {
+                title: 'Ok',
+                width: 160,
+                style: 'GREEN'
+            }
+        ]
+    }).show();
+};
+
+Game.prototype.showInfo = function showInfo(c) {
+
+
+};

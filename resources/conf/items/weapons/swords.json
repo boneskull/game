@@ -1,0 +1,12 @@
+{
+    "Dagger": {
+        "cost": 2,
+        "dmg": "1d4",
+        "crit": 19,
+        "critMultiplier": 2,
+        "weight": 1,
+        "range": 1,
+        "types": ["piercing", "slashing"],
+        "url": "resources/images/weapons/swords/0000.png"
+    }
+}

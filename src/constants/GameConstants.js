@@ -8,7 +8,8 @@ exports = {
 		'CHARACTERS',
 		'NPCS',
 		'CHANGE_ZONES',
-		'CURSORS'
+		'CURSORS',
+        'CLUTTER'
 		),
 
     abilities: [
