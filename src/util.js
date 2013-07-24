@@ -25,3 +25,11 @@ exports.pointstr = function pointstr(x, y) {
 exports.distance = function(x1, y1, x2, y2) {
     return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
 };
+
+exports.isDefined = function(o) {
+    return typeof o !== 'undefined';
+};
+
+exports.isUndefined = function(o) {
+    return !exports.isDefined(o);
+};

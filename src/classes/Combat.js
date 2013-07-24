@@ -6,13 +6,17 @@ var states = Enum(
     'OUT_OF_RANGE',
     'MISS',
     'ATTACKING',
-    'HIT'
+    'HIT',
+    'READY'
 )
 
-exports = Combat = Class(Emitter, function () {
+exports = Combat = Class(Emitter, function (supr) {
     this.init = function (attacker, defender) {
+        supr(this, 'init', [attacker, defender]);
         this.attacker = attacker;
         this.defender = defender;
+        this.state = states.READY;
+
     };
 });
 

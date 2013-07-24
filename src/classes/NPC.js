@@ -7,10 +7,12 @@
  */
 
 import .Character as Character;
+import src.models.NPCModel as NPCModel;
 
 exports = Class(Character, function(supr) {
     this.init = function(opts) {
         supr(this, 'init', [opts]);
+        this.modelKlass = NPCModel;
     };
 
 });

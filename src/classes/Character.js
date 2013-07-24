@@ -1,10 +1,3 @@
-/**
- * Created with PyCharm.
- * User: chiller
- * Date: 7/21/13
- * Time: 10:23 PM
- * To change this template use File | Settings | File Templates.
- */
 import src.constants.GameConstants as gameConstants;
 import util.underscore as _;
 import util.sprintf as sprintf;
@@ -12,14 +5,43 @@ import .Weapon as Weapon;
 import math.util as mathUtil;
 import src.util as util;
 import lib.Enum as Enum;
-
 import event.Emitter as Emitter;
 import src.models.CharacterModel as CharacterModel;
 
+/**
+ * Sugar for sprintf fn
+ * @type {function}
+ */
+var spf = sprintf.sprintf;
+
+/**
+ * Minimum ability # to generate
+ * @type {number}
+ */
 var MIN = 8;
+
+/**
+ * Base ability #
+ * @type {number}
+ */
 var BASE = 10;
+
+/**
+ * Default critical roll
+ * @type {number}
+ */
 var CRIT = 20;
+
+/**
+ * At what point a character dies
+ * @type {number}
+ */
 var DEATH = -10;
+
+/**
+ * Possible character states
+ * @type {*}
+ */
 var states = Enum(
     'ALIVE',
     'DISABLED',
@@ -27,22 +49,117 @@ var states = Enum(
     'DEAD'
 );
 
-
-exports = Character = Class(Emitter, function () {
+/**
+ * Represents a user-controller Character
+ * @type {*}
+ */
+exports = Character = Class(Emitter, function (supr) {
     this.init = function (opts) {
+        supr(this, 'init', [opts]);
 
-        this.klass = JSON.parse(CACHE[sprintf.sprintf('resources/conf/classes/%s.json', opts.klass)])[opts.klass];
+        this.opts = opts;
+
+        this.klass = JSON.parse(CACHE[spf('resources/conf/classes/%s.json', opts.klass)])[opts.klass];
+
         this.level = opts.level || 1;
-        this.state = states.ALIVE;
+        this.status = {
+            state: states.ALIVE
+        };
         this.weapon = new Weapon({type: 'swords', name: 'Dagger'});
-        this.modelKlass = CharacterModel;
-        this._create();
-        this._createModel(opts);
 
+        this._setupTransitions();
+
+        this.status.watch('state', bind(this, '_onStateChange'));
+
+        this._create();
+
+        this.modelKlass = CharacterModel;
     };
+
 });
 
-Character.prototype._createModel = function(opts) {
+/**
+ * Sets up state transition emissions
+ * @private
+ */
+Character.prototype._setupTransitions = function _setupTransitions() {
+
+    var t = {}, emit = bind(this, 'emit'),
+        disabled = function disabled() {
+            emit('Disabled', 'Status', '[name] is disabled!');
+        },
+        dying = function dying() {
+            emit('Dying', 'Status', '[name] is dying!');
+        },
+        dead = function dead() {
+            emit('Dead', 'Status', '[name] joins the decently deceased.');
+        };
+
+    if (util.isDefined(this.transitions)) {
+        return;
+    }
+
+    t[states.ALIVE] = {};
+    t[states.ALIVE][states.DISABLED] = disabled;
+    t[states.ALIVE][states.DYING] = dying;
+    t[states.ALIVE][states.DEAD] = dead;
+
+    t[states.DISABLED] = {};
+    t[states.DISABLED][states.ALIVE] = function () {
+        emit('Alive', 'Status', '[name] is back on his/her feet!');
+    };
+    t[states.DISABLED][states.DYING] = dying;
+    t[states.DISABLED][states.DEAD] = dead;
+
+    t[states.DYING] = {};
+    t[states.DYING][states.ALIVE] = function () {
+        emit('Alive', 'Status', '[name] is back from the brink of death!');
+    };
+    t[states.DYING][states.DISABLED] = function () {
+        emit('Disabled', 'Status', '[name] has been upgraded to serious condition.');
+    };
+    t[states.DYING][states.DEAD] = dead;
+
+    this._transitions = t;
+};
+
+/**
+ * this.status.state handler
+ * @param prop 'state' for all intents and purposes
+ * @param oldState Old state
+ * @param newState New state
+ * @returns {number} New state
+ * @private
+ */
+Character.prototype._onStateChange = function _onStateChange (prop, oldState, newState) {
+    if (newState !== oldState && util.isDefined(oldState)) {
+        this._transitions[oldState][newState]();
+    }
+    return newState;
+};
+
+/**
+ * Computes modifier for a particular ability
+ * @param {string} ability Ability to compute modifier for
+ * @returns {number} Modifier
+ * @private
+ */
+Character.prototype._mod = function (ability) {
+    ability = ability.toUpperCase();
+    if (!util.isDefined(this.abilities[ability])) {
+        throw new Error(sprintf('cannot find ability "%s"', ability));
+    }
+    return mathUtil.mod(this.abilities[ability], BASE);
+};
+
+/**
+ * Creates a model object based on modelKlass, via createModelCB,
+ * puts on grid, makes visible
+ * @param opts Options to pass to the model instance
+ * @private
+ */
+Character.prototype.createModel = function () {
+    var opts = this.opts;
     this.model = opts.createModelCB(this.modelKlass, {
         tileX: opts.tileX,
         tileY: opts.tileY,
@@ -62,6 +179,13 @@ Character.prototype._createModel = function(opts) {
     }, opts.layer);
 };
 
+/**
+ * Gets a random integer
+ * @param min Lowest possible integer
+ * @param max Highest possible integer
+ * @returns {number} The random integer in question
+ * @private
+ */
 Character.prototype._getRandomInt = function _getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 };
@@ -90,6 +214,10 @@ Character.prototype._roll = function _roll(d, s, nn) {
     }, 0);
 };
 
+/**
+ * Rolls the character based on ability priority.
+ * @private
+ */
 Character.prototype._createAbilities = function _createAbilities() {
 
     var abilities = gameConstants.abilities,
@@ -116,120 +244,183 @@ Character.prototype._createAbilities = function _createAbilities() {
 
 };
 
+/**
+ * Creates total/current HP value
+ * @private
+ */
 Character.prototype._createHP = function _createHP() {
-    this.currentHP = this.totalHP = (this.klass.HD + mathUtil.mod(this.abilities.CON, BASE)) + ((this.level - 1) *
-        this._roll(1, this.klass.HD));
+    this.currentHP = this.totalHP = (this.klass.HD + this._mod('con')) +
+        ((this.level - 1) * this._roll(1, this.klass.HD));
 };
 
+/**
+ * Creates the character; calls _createAbilities and _createHP
+ * @private
+ */
 Character.prototype._create = function _create() {
     this._createAbilities();
     this._createHP();
 };
 
-Character.prototype.rollMeleeAtk = function () {
-    return this._roll(1, 20) + mathUtil.mod(this.abilities.STR, BASE);
+/**
+ * Rolls a melee attack (str)
+ * @returns {number} Roll
+ */
+Character.prototype.rollMeleeAtk = function rollMeleeAtk() {
+    return this._roll(1, 20) + this._mod('str');
 };
 
-Character.prototype.rollRangedAtk = function () {
-    return this._roll(1, 20) + mathUtil.mod(this.abilities.DEX, BASE);
+/**
+ * Rolls a ranged attack (dex)
+ * @returns {number} Roll
+ */
+Character.prototype.rollRangedAtk = function rollRangedAtk() {
+    return this._roll(1, 20) + this._mod('dex');
 };
 
-Character.prototype._parseAndRoll = function (s) {
+/**
+ * Parses a string like 1d20 and makes appropriate roll(s)
+ * @param s Dice string
+ * @returns {number} Roll(s)
+ * @private
+ */
+Character.prototype._parseAndRoll = function _parseAndRoll(s) {
     var match = s.match(/^(\d+)d(\d+)$/);
     return this._roll(match[1], match[2], true);
 };
 
-Character.prototype.rollDmg = function () {
+/**
+ * Rolls for damage based on weapon damage
+ * @returns {number}
+ */
+Character.prototype.rollDMG = function rollDMG() {
     return this._parseAndRoll(this.weapon.dmg);
 };
 
-Character.prototype.attack = function (npc) {
+/**
+ * Makes an attack (hit) roll based on distance
+ * @param npc NPC to attack
+ * @returns {*}
+ */
+Character.prototype.attack = function attack(npc) {
     // determine if ranged or melee
-    var d = util.distance(npc.getTileX(), npc.getTileY(),
+    var dist = util.distance(npc.getTileX(), npc.getTileY(),
         this.getTileX(), this.getTileY());
-    if (d > 1) {
-        return this._rangedAttack(npc);
-    } else {
-        return this._meleeAttack(npc);
-    }
+    return dist > 1 ? this._rangedAttack(npc) : this._meleeAttack(npc);
 };
 
-Character.prototype._rangedAttack = function _rangedAttack (npc) {
-    var roll = this.rollRangedAtk() + this._BAB();
-    console.log(roll + ' vs ' + npc.abilities.DEX);
-    if (roll >= npc.abilities.DEX) {
-        return roll;
-    }
-    return 0;
-};
-
+/**
+ * Returns base attack bonus
+ * @returns {number} Base attack bonus
+ * @private
+ */
 Character.prototype._BAB = function _BAB() {
     return this.level * this.klass.BAB;
 };
 
-Character.prototype._meleeAttack = function _meleeAttack (npc) {
-    var roll = this.rollMeleeAtk() + this._BAB();
-    console.log(roll + ' vs ' + npc.abilities.DEX);
-    if (roll >= npc.abilities.DEX) {
-        return roll;
-    }
-    return 0;
+/**
+ * Whether or not the attack (hit) succeeded
+ * @param npc NPC to attack
+ * @param roll Attack roll
+ * @returns {number} Roll; 0 if miss
+ * @private
+ */
+Character.prototype._attackSuccess = function (npc, roll) {
+    return roll >= npc.abilities.DEX ? roll : 0;
+}
+
+/**
+ * Makes a ranged attack roll and returns roll
+ * @param npc NPC to attack
+ * @returns {number} Roll
+ * @private
+ */
+Character.prototype._rangedAttack = function _rangedAttack(npc) {
+    var roll = this.rollRangedAtk() + this._BAB();
+    return this._attackSuccess(npc, roll);
 };
 
+/**
+ * Makes a melee attack roll and returns roll
+ * @param npc NPC to attack
+ * @returns {number} Roll
+ * @private
+ */
+Character.prototype._meleeAttack = function _meleeAttack(npc) {
+    var roll = this.rollMeleeAtk() + this._BAB();
+    return this._attackSuccess(npc, roll);
+};
+
+/**
+ * Rolls for damage based on crit status or not
+ * @param roll Roll to hit
+ * @returns {number} Damage roll
+ */
 Character.prototype.damage = function damage(roll) {
     var crit = this.weapon.crit || CRIT, dmg;
-    if(roll >= crit) {
-        dmg = this.rollDmg() + this.rollDmg();
-    }
-    else {
-        dmg = this.rollDmg();
-    }
-    return dmg;
+    return roll >= crit ? this.rollDMG() + this.rollDMG() : this.rollDMG();
 };
 
+/**
+ * Sets the current character's state
+ * @private
+ */
 Character.prototype._setState = function _setState() {
     if (this.currentHP > 0) {
-        this.state = states.ALIVE;
+        this.status.state = states.ALIVE;
     }
     else if (this.currentHP === 0) {
-        this.state = states.DISABLED;
+        this.status.state = states.DISABLED;
     }
     else if (this.currentHP < 0 && this.currentHP > DEATH) {
-        this.state = states.DYING;
+        this.status.state = states.DYING;
     }
     else {
-        this.state = states.DEAD;
-    }
-    switch(this.state) {
-        case states.DISABLED:
-            this.emit('Disabled', 'Status', '[name] is disabled!');
-            break;
-        case states.DYING:
-            this.emit('Dying', 'Status', '[name] is dying!');
-            break;
-        case states.DEAD:
-            this.emit('Dead', 'Status', '[name] joins the decently deceased.');
+        this.status.state = states.DEAD;
     }
 };
 
+/**
+ * Subtracts some HP from the character and sets new state
+ * @param hp
+ */
 Character.prototype.subtractHP = function subtractHP(hp) {
     this.currentHP -= hp;
     this._setState();
 };
 
+/**
+ * Adds some HP to the character and sets new state
+ * @param hp
+ */
 Character.prototype.addHP = function addHP(hp) {
     this.currentHP += hp;
     this._setState();
 };
 
+/**
+ * Gets tile X from model
+ * @returns {number} x
+ */
 Character.prototype.getTileX = function getTileX() {
     return this.model.getTileX();
 };
 
+/**
+ * Gets tile Y from model
+ * @returns {number} y
+ */
 Character.prototype.getTileY = function getTileY() {
     return this.model.getTileY();
 };
 
+/**
+ * Rolls for initiative
+ * @returns {number}
+ */
+Character.prototype.initiative = function () {
+    return this._mod('DEX');
+};
 
 
 

@@ -14,12 +14,13 @@ import src.settings.MapSettings as mapSettings;
 import src.settings.EditorSettings as editorSettings;
 import src.settings.ItemSettings as itemSettings;
 
-
 import src.constants.GameConstants as gameConstants;
 
 import src.classes.Character as Character;
 import src.classes.NPC as NPC;
 import src.classes.Combat as Combat;
+
+import src.lib.watch;
 
 import src.util as util;
 
@@ -38,7 +39,6 @@ exports = Game = Class(GC.Application, function () {
             resizeRootView: false,
             preload: ['resources/images']
         });
-        console.log(mapSettings);
         this.scaleUI();
 
         // Create an instance of Isometric, this class wraps the isometric models and views.
@@ -120,7 +120,9 @@ Game.prototype.onReady = function onReady() {
         modelListCB: bind(this._isometric, 'getDynamicModels')
     }).on('Disabled', message)
         .on('Dying', message)
-        .on('Dead', message);
+        .on('Dead', message)
+        .on('Alive', message);
+    this.character.createModel();
 
     this.npc = new NPC({
         klass: 'mage',
@@ -131,7 +133,9 @@ Game.prototype.onReady = function onReady() {
         modelListCB: bind(this._isometric, 'getDynamicModels')
     }).on('Disabled', message)
         .on('Dying', message)
-        .on('Dead', message);
+        .on('Dead', message)
+        .on('Alive', message);
+    this.npc.createModel();
 
 //
 //        this._door = this._isometric.putItem('door', 9, 17, {
