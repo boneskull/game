@@ -14,7 +14,6 @@ import src.settings.MapSettings as mapSettings;
 import src.settings.EditorSettings as editorSettings;
 import src.settings.ItemSettings as itemSettings;
 
-import src.models.CharacterModel as CharacterModel;
 
 import src.constants.GameConstants as gameConstants;
 
@@ -106,53 +105,34 @@ Game.prototype.onCombat = function onBattle() {
 Game.prototype.onReady = function onReady() {
 
     var map = this._isometric.getMap(),
-        concrete_line = [11, 11, 11];
+        concrete_line = [11, 11, 11],
+        message = bind(this, 'onMessage');
     map.getTile(1, 9)[0].index = 1;
     map.getTile(1, 10)[0].index = 1;
 //        map.getTile(9, 17)[0].index = 1;
 
-
-    this._character = this._isometric.putDynamicItem(CharacterModel, {
+    this.character = new Character({
+        klass: 'warrior',
         tileX: 1,
         tileY: 9,
-        visible: true,
-        item: 'warrior',
-        range: itemSettings.warrior.range,
-        conditions: {
-            accept: [
-                {
-                    layer: 0,
-                    type: 'group',
-                    groups: [gameConstants.tileGroups.PASSABLE]
-                }
-            ]
-        }
-    }, 3);
-
-    this._npc = this._isometric.putDynamicItem(CharacterModel, {
-        tileX: 1,
-        tileY: 10,
-        visible: true,
-        item: 'mage',
-        range: itemSettings.mage.range,
-        conditions: {
-            accept: [
-                {
-                    layer: 0,
-                    type: 'group',
-                    groups: [gameConstants.tileGroups.PASSABLE]
-                }
-            ]
-        }
-    }, 3);
-
-    this.character = new Character({klass: 'warrior', model: this._character});
-    var message = bind(this, 'onMessage');
-
-    this.npc = new NPC({klass: 'mage', model: this._npc})
-        .on('Disabled', message)
+        layer: 3,
+        createModelCB: bind(this._isometric, 'putDynamicItem'),
+        modelListCB: bind(this._isometric, 'getDynamicModels')
+    }).on('Disabled', message)
         .on('Dying', message)
         .on('Dead', message);
+
+    this.npc = new NPC({
+        klass: 'mage',
+        tileX: 1,
+        tileY: 10,
+        layer: 3,
+        createModelCB: bind(this._isometric, 'putDynamicItem'),
+        modelListCB: bind(this._isometric, 'getDynamicModels')
+    }).on('Disabled', message)
+        .on('Dying', message)
+        .on('Dead', message);
+
 //
 //        this._door = this._isometric.putItem('door', 9, 17, {
 //            target: this._character
@@ -173,9 +153,9 @@ Game.prototype.onReady = function onReady() {
 };
 
 Game.prototype.onEdit = function onEdit(selection) {
-    this._character.moveTo(selection.rect.x, selection.rect.y);
+    this.character.model.moveTo(selection.rect.x, selection.rect.y);
     this._isometric.setTool(false);
-    this._character.clearRange();
+    this.character.model.clearRange();
     this._isometric.refreshMap();
 
 };
@@ -209,14 +189,14 @@ Game.prototype.onTool = function onTool(index) {
 
     switch (index) {
         case 1:
-            this._character.drawRange();
+            this.character.model.drawRange();
             isometric.refreshMap();
             break;
         case 2:
             this.initiateCombat();
             break;
         default:
-            this._character.clearRange();
+            this.character.model.clearRange();
             isometric.refreshMap();
             break;
 

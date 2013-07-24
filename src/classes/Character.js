@@ -14,6 +14,7 @@ import src.util as util;
 import lib.Enum as Enum;
 
 import event.Emitter as Emitter;
+import src.models.CharacterModel as CharacterModel;
 
 var MIN = 8;
 var BASE = 10;
@@ -32,13 +33,34 @@ exports = Character = Class(Emitter, function () {
 
         this.klass = JSON.parse(CACHE[sprintf.sprintf('resources/conf/classes/%s.json', opts.klass)])[opts.klass];
         this.level = opts.level || 1;
-        this.model = opts.model;
         this.state = states.ALIVE;
         this.weapon = new Weapon({type: 'swords', name: 'Dagger'});
+        this.modelKlass = CharacterModel;
         this._create();
+        this._createModel(opts);
 
     };
 });
+
+Character.prototype._createModel = function(opts) {
+    this.model = opts.createModelCB(this.modelKlass, {
+        tileX: opts.tileX,
+        tileY: opts.tileY,
+        visible: true,
+        item: opts.klass,
+        range: this.klass.range,
+        modelListCB: opts.modelListCB,
+        conditions: {
+            accept: [
+                {
+                    layer: 0,
+                    type: 'group',
+                    groups: [gameConstants.tileGroups.PASSABLE]
+                }
+            ]
+        }
+    }, opts.layer);
+};
 
 Character.prototype._getRandomInt = function _getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
