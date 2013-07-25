@@ -6,6 +6,8 @@ import isometric.models.item.SpawnerModel as SpawnerModel;
 import menus.views.components.ButtonView as ButtonView;
 import menus.views.TextDialogView as TextDialogView;
 
+import util.sprintf as sprintf;
+
 import ui.TextView as TextView;
 
 import src.settings.TileSettings as tileSettings;
@@ -19,10 +21,15 @@ import src.constants.GameConstants as gameConstants;
 import src.classes.Character as Character;
 import src.classes.NPC as NPC;
 import src.classes.Combat as Combat;
+import src.classes.Scene as Scene;
 
 import src.lib.watch;
 
 import src.util as util;
+
+var spf = sprintf.sprintf;
+
+var klasses = JSON.parse(CACHE['resources/conf/classIndex.json']);
 
 exports = Game = Class(GC.Application, function () {
 
@@ -98,57 +105,98 @@ exports = Game = Class(GC.Application, function () {
 });
 
 
-Game.prototype.onCombat = function onBattle() {
-    console.log("YARRR");
+Game.prototype.onCombat = function onCombat() {
+    console.log('somebody is attacking');
+};
+
+Game.prototype._generateCharacters = function(count) {
+    var map = this._isometric.getMap(),
+        xs = [12, 12, 12],
+        ys = [23, 24, 25],
+        message = bind(this, 'onMessage'),
+        character;
+
+    this.characters = [];
+
+    while (count--) {
+        character = new Character({
+            klass: klasses[util.getRandomInt(0, klasses.length-1)],
+            tileX: xs[count],
+            tileY: ys[count],
+            layer: 3,
+            createModelCB: bind(this._isometric, 'putDynamicItem'),
+            modelListCB: bind(this._isometric, 'getDynamicModels')
+        }).on('Disabled', message)
+            .on('Dying', message)
+            .on('Dead', message)
+            .on('Alive', message);
+
+        this.characters.push(character);
+
+        console.log(spf('created character %s %s', character.klassName, character.name));
+
+        map.getTile(xs[count], ys[count])[0].index = 1;
+    }
+
+
+};
+
+Game.prototype._generateNPCs = function(count) {
+    var map = this._isometric.getMap(),
+        xs = [24, 24, 24],
+        ys = [23, 24, 25],
+        message = bind(this, 'onMessage'),
+        npc;
+
+    this.npcs = [];
+
+    while (count--) {
+        npc = new NPC({
+            klass: klasses[util.getRandomInt(0, klasses.length-1)],
+            tileX: xs[count],
+            tileY: ys[count],
+            layer: 3,
+            createModelCB: bind(this._isometric, 'putDynamicItem'),
+            modelListCB: bind(this._isometric, 'getDynamicModels')
+        }).on('Disabled', message)
+            .on('Dying', message)
+            .on('Dead', message)
+            .on('Alive', message)
+        this.npcs.push(npc);
+
+        console.log(spf('created NPC %s %s', npc.klassName, npc.name));
+
+        map.getTile(xs[count], ys[count])[0].index = 1;
+    }
 };
 
 Game.prototype.onReady = function onReady() {
 
     var map = this._isometric.getMap(),
         concrete_line = [11, 11, 11],
-        message = bind(this, 'onMessage');
-    map.getTile(1, 9)[0].index = 1;
-    map.getTile(1, 10)[0].index = 1;
-//        map.getTile(9, 17)[0].index = 1;
+        scene;
 
-    this.character = new Character({
-        klass: 'warrior',
-        tileX: 1,
-        tileY: 9,
-        layer: 3,
-        createModelCB: bind(this._isometric, 'putDynamicItem'),
-        modelListCB: bind(this._isometric, 'getDynamicModels')
-    }).on('Disabled', message)
-        .on('Dying', message)
-        .on('Dead', message)
-        .on('Alive', message);
-    this.character.createModel();
+    this._generateCharacters(3);
+    this._generateNPCs(3);
 
-    this.npc = new NPC({
-        klass: 'mage',
-        tileX: 1,
-        tileY: 10,
-        layer: 3,
-        createModelCB: bind(this._isometric, 'putDynamicItem'),
-        modelListCB: bind(this._isometric, 'getDynamicModels')
-    }).on('Disabled', message)
-        .on('Dying', message)
-        .on('Dead', message)
-        .on('Alive', message);
-    this.npc.createModel();
+    scene = new Scene({
+        characters: this.characters,
+        npcs: this.npcs
+    }).on('Battle', bind(this, 'onMessage'));
 
-//
+    scene.battle();
+    
 //        this._door = this._isometric.putItem('door', 9, 17, {
 //            target: this._character
 //        });
 
-    map.drawLineHorizontal(0, 0, 0, 18, gameConstants.tileGroups.IMPASSABLE,
+    map.drawLineHorizontal(0, 0, 0, 36, gameConstants.tileGroups.IMPASSABLE,
         concrete_line);
-    map.drawLineHorizontal(0, 18, 0, 18, gameConstants.tileGroups.IMPASSABLE,
+    map.drawLineHorizontal(0, 36, 0, 36, gameConstants.tileGroups.IMPASSABLE,
         concrete_line);
-    map.drawLineVertical(0, 0, 0, 18, gameConstants.tileGroups.IMPASSABLE,
+    map.drawLineVertical(0, 0, 0, 36, gameConstants.tileGroups.IMPASSABLE,
         concrete_line);
-    map.drawLineVertical(0, 18, 0, 18, gameConstants.tileGroups.IMPASSABLE,
+    map.drawLineVertical(0, 36, 0, 36, gameConstants.tileGroups.IMPASSABLE,
         concrete_line);
 
     this._isometric.setTool(false);
@@ -157,9 +205,9 @@ Game.prototype.onReady = function onReady() {
 };
 
 Game.prototype.onEdit = function onEdit(selection) {
-    this.character.model.moveTo(selection.rect.x, selection.rect.y);
+//    this.character.model.moveTo(selection.rect.x, selection.rect.y);
     this._isometric.setTool(false);
-    this.character.model.clearRange();
+//    this.character.model.clearRange();
     this._isometric.refreshMap();
 
 };
@@ -193,14 +241,14 @@ Game.prototype.onTool = function onTool(index) {
 
     switch (index) {
         case 1:
-            this.character.model.drawRange();
+//            this.character.model.drawRange();
             isometric.refreshMap();
             break;
         case 2:
             this.initiateCombat();
             break;
         default:
-            this.character.model.clearRange();
+//            this.character.model.clearRange();
             isometric.refreshMap();
             break;
 
@@ -209,7 +257,7 @@ Game.prototype.onTool = function onTool(index) {
 };
 
 Game.prototype.initiateCombat = function () {
-
+return;
     this._isometric.emit('Combat');
     var message = bind(this, 'onMessage');
     var c = new Combat(this.character, this.npc)

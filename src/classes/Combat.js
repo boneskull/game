@@ -1,6 +1,9 @@
 import src.util as util;
 import lib.Enum as Enum;
 import event.Emitter as Emitter;
+import util.sprintf as sprintf;
+
+var spf = sprintf.sprintf;
 
 var states = Enum(
     'OUT_OF_RANGE',
@@ -53,13 +56,13 @@ Combat.prototype.end = function () {
     switch(this.state) {
         case states.HIT:
             this.defender.subtractHP(this.lastDmgRoll);
-            this.emit('Hit', 'Combat', "Hit for " + this.lastDmgRoll + " hp! " + this.defender.currentHP + " HP left");
+            this.emit('Hit', 'Combat', spf("%s was hit for %d HP! %d HP remaining.", this.defender.name, this.lastDmgRoll, this.defender.currentHP));
             break;
         case states.OUT_OF_RANGE:
-            this.emit('OutOfRange', 'Combat', 'Out of range!');
+            this.emit('OutOfRange', 'Combat', spf('%s is out of range!', this.attacker.name));
             break;
         case states.MISS:
-            this.emit('Miss', 'Combat', 'You missed terribly!');
+            this.emit('Miss', 'Combat', spf('%s missed terribly!', this.attacker.name));
             break;
         default:
             throw new Error('bad state');

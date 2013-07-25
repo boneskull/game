@@ -49,17 +49,25 @@ var states = Enum(
     'DEAD'
 );
 
+var names = JSON.parse(CACHE['resources/names.json']);
+
 /**
  * Represents a user-controller Character
  * @type {*}
  */
 exports = Character = Class(Emitter, function (supr) {
+
+    this.modelKlass = CharacterModel;
+
     this.init = function (opts) {
+
         supr(this, 'init', [opts]);
 
-        this.opts = opts;
+        this._opts = opts;
 
-        this.klass = JSON.parse(CACHE[spf('resources/conf/classes/%s.json', opts.klass)])[opts.klass];
+        this.klass = JSON.parse(CACHE[spf('resources/conf/classes/%s.json',
+            opts.klass)])[opts.klass];
+        this.klassName = opts.klass;
 
         this.level = opts.level || 1;
         this.status = {
@@ -72,8 +80,7 @@ exports = Character = Class(Emitter, function (supr) {
         this.status.watch('state', bind(this, '_onStateChange'));
 
         this._create();
-
-        this.modelKlass = CharacterModel;
+        this._createModel();
     };
 
 });
@@ -84,15 +91,15 @@ exports = Character = Class(Emitter, function (supr) {
  */
 Character.prototype._setupTransitions = function _setupTransitions() {
 
-    var t = {}, emit = bind(this, 'emit'),
+    var t = {}, emit = bind(this, 'emit'), name = this.name,
         disabled = function disabled() {
-            emit('Disabled', 'Status', '[name] is disabled!');
+            emit('Disabled', 'Status', spf('%s is disabled!', name));
         },
         dying = function dying() {
-            emit('Dying', 'Status', '[name] is dying!');
+            emit('Dying', 'Status', spf('%s is dying!', name));
         },
         dead = function dead() {
-            emit('Dead', 'Status', '[name] joins the decently deceased.');
+            emit('Dead', 'Status', spf('%s joins the decently deceased.', name));
         };
 
     if (util.isDefined(this.transitions)) {
@@ -106,17 +113,17 @@ Character.prototype._setupTransitions = function _setupTransitions() {
 
     t[states.DISABLED] = {};
     t[states.DISABLED][states.ALIVE] = function () {
-        emit('Alive', 'Status', '[name] is back on his/her feet!');
+        emit('Alive', 'Status', spf('%s is back on his/her feet!', name));
     };
     t[states.DISABLED][states.DYING] = dying;
     t[states.DISABLED][states.DEAD] = dead;
 
     t[states.DYING] = {};
     t[states.DYING][states.ALIVE] = function () {
-        emit('Alive', 'Status', '[name] is back from the brink of death!');
+        emit('Alive', 'Status', spf('%s is back from the brink of death!', name));
     };
     t[states.DYING][states.DISABLED] = function () {
-        emit('Disabled', 'Status', '[name] has been upgraded to serious condition.');
+        emit('Disabled', 'Status', spf('%s has been upgraded to serious condition.', name));
     };
     t[states.DYING][states.DEAD] = dead;
 
@@ -158,8 +165,8 @@ Character.prototype._mod = function (ability) {
  * @param opts Options to pass to the model instance
  * @private
  */
-Character.prototype.createModel = function () {
-    var opts = this.opts;
+Character.prototype._createModel = function _createModel () {
+    var opts = this._opts;
     this.model = opts.createModelCB(this.modelKlass, {
         tileX: opts.tileX,
         tileY: opts.tileY,
@@ -180,17 +187,6 @@ Character.prototype.createModel = function () {
 };
 
 /**
- * Gets a random integer
- * @param min Lowest possible integer
- * @param max Highest possible integer
- * @returns {number} The random integer in question
- * @private
- */
-Character.prototype._getRandomInt = function _getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-};
-
-/**
  * Rolls the dice.  Given x dice, it picks rolls x+1 times and
  * returns best x rolls.
  * @param {number} d # of dice to roll
@@ -203,7 +199,7 @@ Character.prototype._roll = function _roll(d, s, nn) {
         sides = parseInt(s, 10),
         dice = parseInt(d, 10) + (notNice ? 0 : 1);
     while (dice--) {
-        totals.push(this._getRandomInt(1, sides));
+        totals.push(util.getRandomInt(1, sides));
     }
     totals.sort();
     if (!notNice) {
@@ -260,6 +256,15 @@ Character.prototype._createHP = function _createHP() {
 Character.prototype._create = function _create() {
     this._createAbilities();
     this._createHP();
+    this._pickName();
+};
+
+/**
+ * Chooses a name at random.
+ * @private
+ */
+Character.prototype._pickName = function () {
+    this.name = util.capitalizeName(names[util.getRandomInt(0, names.length)]);
 };
 
 /**
