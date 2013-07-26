@@ -1,15 +1,15 @@
-import isometric.models.item.DynamicModel as DynamicModel;
+jsio("import isometric.models.item.DynamicModel as DynamicModel");
 
-import math.util as mathUtil;
+jsio("import math.util as mathUtil");
 
-import util.underscore as _;
+jsio("import util.underscore as _");
 
-import src.lib.astar as astar;
-import src.lib.graph as graph;
+jsio("import src.lib.astar as astar");
+jsio("import src.lib.graph as graph");
 
-import src.util as util;
+jsio("import src.util as util");
 
-import src.constants.GameConstants as gameConstants;
+jsio("import src.constants.GameConstants as gameConstants");
 
 var MODEL_LAYER = 3;
 var RANGE_LAYER = 2;
@@ -25,6 +25,12 @@ var CharacterModel = Class(DynamicModel, function (supr) {
         this._speed = SPEED;
         this._range = opts.range;
         this._modelListCB = opts.modelListCB;
+    };
+
+    this.onAttack = function(selection, attacker) {
+        if (this.getTileX() === selection.rect.x && this.getTileY() === selection.rect.y) {
+            this.emit('characterModel:defense', attacker);
+        }
     };
 
     this.drawRange = function drawRange() {

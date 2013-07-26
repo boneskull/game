@@ -1,4 +1,4 @@
-import lib.Enum as Enum;
+jsio("import lib.Enum as Enum");
 
 exports = {
 

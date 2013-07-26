@@ -1,5 +1,5 @@
-import ui.View as View;
-import ui.TextView as TextView;
+jsio("import ui.View as View");
+jsio("import ui.TextView as TextView");
 
 exports = Class(View, function(supr) {
 	this.init = function(opts) {

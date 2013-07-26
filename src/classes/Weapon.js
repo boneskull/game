@@ -1,4 +1,4 @@
-import util.sprintf as sprintf;
+jsio("import util.sprintf as sprintf");
 
 exports = Class(function () {
 

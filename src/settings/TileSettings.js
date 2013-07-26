@@ -1,5 +1,6 @@
-import src.classes.TileGroup as TileGroup;
-import src.constants.GameConstants as gameConstants;
+jsio("import src.classes.TileGroup as TileGroup");
+jsio("import src.constants.GameConstants as gameConstants");
+
 var tileGroups = JSON.parse(CACHE['resources/conf/tileGroups.json']).tileGroups,
 	i = tileGroups.length,
 	tgs = [];

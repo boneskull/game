@@ -1,12 +1,12 @@
-import src.constants.GameConstants as gameConstants;
-import util.underscore as _;
-import util.sprintf as sprintf;
-import .Weapon as Weapon;
-import math.util as mathUtil;
-import src.util as util;
-import lib.Enum as Enum;
-import event.Emitter as Emitter;
-import src.models.CharacterModel as CharacterModel;
+jsio("import src.constants.GameConstants as gameConstants");
+jsio("import util.underscore as _");
+jsio("import util.sprintf as sprintf");
+jsio("import .Weapon as Weapon");
+jsio("import math.util as mathUtil");
+jsio("import src.util as util");
+jsio("import lib.Enum as Enum");
+jsio("import event.Emitter as Emitter");
+jsio("import src.models.CharacterModel as CharacterModel");
 
 /**
  * Sugar for sprintf fn
@@ -58,6 +58,7 @@ var names = JSON.parse(CACHE['resources/names.json']);
 exports = Character = Class(Emitter, function (supr) {
 
     this.modelKlass = CharacterModel;
+    this.abilityWeight = 1.0;
 
     this.init = function (opts) {
 
@@ -184,6 +185,12 @@ Character.prototype._createModel = function _createModel () {
             ]
         }
     }, opts.layer);
+    this.model.on('characterModel:attack', bind(this.model, 'onAttack'))
+        .on('characterModel:defense', bind(this, 'onDefense'));
+};
+
+Character.prototype.onDefense = function(attacker) {
+    console.log(spf("%s is being attacked by %s", this.name, attacker.name));
 };
 
 /**
@@ -218,6 +225,7 @@ Character.prototype._createAbilities = function _createAbilities() {
 
     var abilities = gameConstants.abilities,
         i = abilities.length, priority = this.klass.abilityPriority,
+        abilityWeight = this.abilityWeight,
         scores = [], o = {};
 
     while (i--) {
@@ -228,7 +236,7 @@ Character.prototype._createAbilities = function _createAbilities() {
     scores = scores.sort(function (a, b) {
         return b - a;
     }).map(function (score) {
-            return Math.max(MIN, score);
+            return Math.floor(Math.max(MIN, score) * abilityWeight);
         });
     i = priority.length;
 
@@ -423,9 +431,11 @@ Character.prototype.getTileY = function getTileY() {
  * Rolls for initiative
  * @returns {number}
  */
-Character.prototype.initiative = function () {
-    return this._mod('DEX');
+Character.prototype.rollInitiative = function () {
+    return this._roll(1, 20) + this._mod('dex');
 };
 
-
+Character.prototype.beginTurn = function() {
+    this.emit('character:beginTurn');
+};
 

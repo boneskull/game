@@ -1,5 +1,5 @@
-import src.constants.GameConstants as gameConstants;
-import src.settings.TileSettings as tileSettings;
+jsio("import src.constants.GameConstants as gameConstants");
+jsio("import src.settings.TileSettings as tileSettings");
 
 exports = {
     generatorSteps: [

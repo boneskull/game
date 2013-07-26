@@ -1,4 +1,4 @@
-import util.sprintf as sprintf;
+jsio("import util.sprintf as sprintf");
 
 exports = {
     door: {
@@ -17,14 +17,12 @@ exports = {
     }
 };
 
-(function makeClasses () {
 
-    var classes = JSON.parse(CACHE['resources/conf/classIndex.json']),
-        i = classes.length,
-        klass;
-    while (i--) {
-        klass = JSON.parse(CACHE[sprintf.sprintf('resources/conf/classes/%s.json', classes[i])]);
-        merge(exports, klass);
-    }
+var klasses = JSON.parse(CACHE['resources/conf/classIndex.json']),
+    i = klasses.length,
+    klass;
+while (i--) {
+    klass = JSON.parse(CACHE[sprintf.sprintf('resources/conf/classes/%s.json', klasses[i])]);
+    merge(exports, klass);
+}
 
-})();

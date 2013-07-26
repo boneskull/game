@@ -1,7 +1,7 @@
-import src.util as util;
-import lib.Enum as Enum;
-import event.Emitter as Emitter;
-import util.sprintf as sprintf;
+jsio("import src.util as util");
+jsio("import lib.Enum as Enum");
+jsio("import event.Emitter as Emitter");
+jsio("import util.sprintf as sprintf");
 
 var spf = sprintf.sprintf;
 

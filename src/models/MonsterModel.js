@@ -1,14 +1,14 @@
-import isometric.models.item.DynamicModel as DynamicModel;
+jsio("import isometric.models.item.DynamicModel as DynamicModel");
 
-import util.underscore as underscore;
+jsio("import util.underscore as underscore");
 
-import math.geom.Rect as Rect;
+jsio("import math.geom.Rect as Rect");
 
-import src.util as util;
+jsio("import src.util as util");
 
-import src.views.BattleView as BattleView;
+jsio("import src.views.BattleView as BattleView");
 
-import src.constants.GameConstants as gameConstants;
+jsio("import src.constants.GameConstants as gameConstants");
 
 var MonsterModel = Class(DynamicModel, function(supr) {
 	this.init = function(opts) {

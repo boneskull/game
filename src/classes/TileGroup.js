@@ -1,6 +1,6 @@
-import src.constants.GameConstants as gameConstants;
-import string.pad as pad;
-import util.sprintf as sprintf;
+jsio("import src.constants.GameConstants as gameConstants");
+jsio("import string.pad as pad");
+jsio("import util.sprintf as sprintf");
 
 var TileGroup = Class(function() {
 	this.init = function(o) {
