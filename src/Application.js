@@ -109,7 +109,6 @@ exports = Game = Class(GC.Application, function () {
             .on('Ready', bind(this, 'onReady'))
             .on('Message', bind(this, 'onMessage'));
 
-        this._isometric.setTool(false);
     };
 
 
@@ -183,6 +182,15 @@ exports = Game = Class(GC.Application, function () {
         var map = this._isometric.getMap(),
             concrete_line = [11, 11, 11];
 
+        map.drawLineHorizontal(0, 0, 0, gridSettings.height,
+            gameConstants.tileGroups.IMPASSABLE, concrete_line);
+        map.drawLineHorizontal(0, gridSettings.height, 0, gridSettings.height,
+            gameConstants.tileGroups.IMPASSABLE, concrete_line);
+        map.drawLineVertical(0, 0, 0, gridSettings.height,
+            gameConstants.tileGroups.IMPASSABLE, concrete_line);
+        map.drawLineVertical(0, gridSettings.height, 0, gridSettings.height,
+            gameConstants.tileGroups.IMPASSABLE, concrete_line);
+
         this._generateCharacters(1);
         this._generateNPCs(3);
 
@@ -191,18 +199,10 @@ exports = Game = Class(GC.Application, function () {
             npcs: this.npcs
         }).on('scene:battleBegin', bind(this, 'onMessage'));
 
-        map.drawLineHorizontal(0, 0, 0, 36, gameConstants.tileGroups.IMPASSABLE,
-            concrete_line);
-        map.drawLineHorizontal(0, 36, 0, 36, gameConstants.tileGroups.IMPASSABLE,
-            concrete_line);
-        map.drawLineVertical(0, 0, 0, 36, gameConstants.tileGroups.IMPASSABLE,
-            concrete_line);
-        map.drawLineVertical(0, 36, 0, 36, gameConstants.tileGroups.IMPASSABLE,
-            concrete_line);
-
         this._isometric.refreshMap();
+        this._isometric.setTool(false);
 
-        this.scene.battle();
+//        this.scene.battle();
 
 
     };
@@ -268,7 +268,7 @@ exports = Game = Class(GC.Application, function () {
 
     this._attack = function _attack(selection) {
         var i = this.scene.players.length;
-        while(i--) {
+        while (i--) {
             this.scene.players[i].model.emit('characterModel:attack', selection, this.scene.currentPlayer);
         }
 
@@ -319,7 +319,7 @@ exports = Game = Class(GC.Application, function () {
         this.showTools();
     };
 
-    this.onNPCBeginTurn = function(npc) {
+    this.onNPCBeginTurn = function (npc) {
         npc.chooseTarget(this.characters);
         npc.attackAndOrMove();
 

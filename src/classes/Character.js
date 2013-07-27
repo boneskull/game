@@ -173,11 +173,12 @@ Character.prototype._mod = function (ability) {
 //TODO: make this.model private and create bridge methods for it
 Character.prototype._createModel = function _createModel () {
     var opts = this._opts;
+
     this.model = opts.createModelCB(this.modelKlass, {
         tileX: opts.tileX,
         tileY: opts.tileY,
         visible: true,
-        item: opts.klass,
+        item: this.klass.name,
         range: this.klass.range,
         modelListCB: opts.modelListCB,
         conditions: {

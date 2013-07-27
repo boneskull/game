@@ -23,6 +23,6 @@ var klasses = JSON.parse(CACHE['resources/conf/classIndex.json']),
     klass;
 while (i--) {
     klass = JSON.parse(CACHE[sprintf.sprintf('resources/conf/classes/%s.json', klasses[i])]);
-    merge(exports, klass);
+    exports[klass.name] = klass;
 }
 
