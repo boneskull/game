@@ -15,6 +15,12 @@ jsio("import src.models.CharacterModel as CharacterModel");
 var spf = sprintf.sprintf;
 
 /**
+ * Sugar for log fn
+ * @type {Function}
+ */
+var log = console.log;
+
+/**
  * Minimum ability # to generate
  * @type {number}
  */
@@ -67,14 +73,13 @@ exports = Character = Class(Emitter, function (supr) {
         this._opts = opts;
 
         this.klass = JSON.parse(CACHE[spf('resources/conf/classes/%s.json',
-            opts.klass)])[opts.klass];
-        this.klassName = opts.klass;
+            opts.klass)]);
 
         this.level = opts.level || 1;
         this.status = {
             state: states.ALIVE
         };
-        this.weapon = new Weapon({type: 'swords', name: 'Dagger'});
+        this.weapon = new Weapon({type: this.klass.defaultWeaponGroup, name: this.klass.defaultWeapon});
 
         this._setupTransitions();
 
@@ -163,9 +168,9 @@ Character.prototype._mod = function (ability) {
 /**
  * Creates a model object based on modelKlass, via createModelCB,
  * puts on grid, makes visible
- * @param opts Options to pass to the model instance
  * @private
  */
+//TODO: make this.model private and create bridge methods for it
 Character.prototype._createModel = function _createModel () {
     var opts = this._opts;
     this.model = opts.createModelCB(this.modelKlass, {
@@ -185,8 +190,11 @@ Character.prototype._createModel = function _createModel () {
             ]
         }
     }, opts.layer);
+
     this.model.on('characterModel:attack', bind(this.model, 'onAttack'))
         .on('characterModel:defense', bind(this, 'onDefense'));
+
+    console.log(this.model);
 };
 
 Character.prototype.onDefense = function(attacker) {

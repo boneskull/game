@@ -1,0 +1,14 @@
+{
+    "name": "Ranger",
+    "range": 5,
+    "images": ["resources/images/characters/0003.gif"],
+    "width": 82,
+    "height": 82,
+    "offsetX": -41,
+    "offsetY": -82,
+    "HD": 8,
+    "BAB": 1,
+    "abilityPriority": ["DEX", "STR", "WIS", "INT", "CON", "CHA"],
+    "defaultWeaponGroup": "shortbows",
+    "defaultWeapon": "Shortbow"
+}

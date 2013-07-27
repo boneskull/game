@@ -1,0 +1,13 @@
+{
+    "Big Stick": {
+        "cost": 4,
+        "dmg": "1d4/1d4",
+        "critMultiplier": 2,
+        "weight": 4,
+        "range": 1,
+        "dmgTypes": ["bludgeoning"],
+        "url": "resources/images/weapons/swords/0000.png",
+        "2h": true,
+        "double": true
+    }
+}

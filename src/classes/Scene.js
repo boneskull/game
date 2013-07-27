@@ -8,11 +8,12 @@ exports = Scene = Class(Emitter, function (supr) {
     };
 
     this.battle = function () {
-        this.emit('Battle', 'Achtung!', 'Battle begins!');
+        var players, i;
+        this.emit('scene:battleBegin', 'Achtung!', 'Battle begins!');
 
         // roll initiatives
-        var players = this.characters.concat(this.npcs);
-        var i = players.length;
+        players = this.characters.concat(this.npcs);
+        i = players.length;
         while (i--) {
             players[i]._currentInitiative = players[i].rollInitiative();
         }
@@ -30,7 +31,7 @@ exports = Scene = Class(Emitter, function (supr) {
         if (this.round > this.players.length - 1) {
             this.round = 0;
         }
-        this.currentPlayer = this.players[this.round]
+        this.currentPlayer = this.players[this.round];
         this.currentPlayer.beginTurn();
     };
 

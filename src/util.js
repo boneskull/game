@@ -61,3 +61,7 @@ exports.capitalizeName = function (name) {
 exports.getRandomInt = function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 };
+
+exports.choose = function (array) {
+    return array[exports.getRandomInt(0, array.length - 1)];
+};

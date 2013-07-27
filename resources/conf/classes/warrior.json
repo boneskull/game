@@ -1,13 +1,15 @@
 {
-	"warrior": {
-		"range": 4,
-		"images": ["resources/images/characters/0001.gif"],
-		"width": 82,
-		"height": 82,
-		"offsetX": -41,
-        "offsetY": -82,
-        "HD": 10,
-        "BAB": 1,
-        "abilityPriority": ["STR", "CON", "DEX", "INT", "CHA", "WIS"]
-    }
+    "name": "Warrior",
+    "range": 4,
+    "images": ["resources/images/characters/0001.gif"],
+    "width": 82,
+    "height": 82,
+    "offsetX": -41,
+    "offsetY": -82,
+    "HD": 10,
+    "BAB": 1,
+    "abilityPriority": ["STR", "CON", "DEX", "INT", "CHA", "WIS"],
+    "defaultWeaponGroup": "swords",
+    "defaultWeapon": "Basic Dagger"
+
 }

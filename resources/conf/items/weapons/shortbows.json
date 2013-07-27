@@ -1,0 +1,12 @@
+{
+    "Shortbow": {
+        "cost": 30,
+        "dmg": "1d6",
+        "critMultiplier": 3,
+        "weight": 2,
+        "range": 60,
+        "dmgTypes": ["piercing"],
+        "url": "resources/images/weapons/swords/0000.png",
+        "2h": true
+    }
+}

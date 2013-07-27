@@ -31,6 +31,8 @@ var spf = sprintf.sprintf;
 
 var klasses = JSON.parse(CACHE['resources/conf/classIndex.json']);
 
+// https://gist.github.com/boneskull/85f618aed3fd95d8946d
+
 exports = Game = Class(GC.Application, function () {
 
     /**
@@ -105,15 +107,11 @@ exports = Game = Class(GC.Application, function () {
 
         this._isometric
             .on('Ready', bind(this, 'onReady'))
-            .on('Message', bind(this, 'onMessage'))
-            .on('AddDynamicModel', bind(this, 'onAddDynamicModel'));
+            .on('Message', bind(this, 'onMessage'));
 
         this._isometric.setTool(false);
     };
 
-    this.onAddDynamicModel = function(model){
-          console.log(model);
-    };
 
     this._generateCharacters = function _generateCharacters(count) {
         var map = this._isometric.getMap(),
@@ -126,7 +124,7 @@ exports = Game = Class(GC.Application, function () {
 
         while (count--) {
             character = new Character({
-                klass: klasses[util.getRandomInt(0, klasses.length - 1)],
+                klass: util.choose(klasses),
                 tileX: xs[count],
                 tileY: ys[count],
                 layer: 3,
@@ -140,7 +138,8 @@ exports = Game = Class(GC.Application, function () {
 
             this.characters.push(character);
 
-            console.log(spf('created character %s %s', character.klassName, character.name));
+            console.log(character.klass);
+            console.log(spf('created character %s %s', character.klass.name, character.name));
 
             map.getTile(xs[count], ys[count])[0].index = 1;
         }
@@ -173,7 +172,7 @@ exports = Game = Class(GC.Application, function () {
 
             this.npcs.push(npc);
 
-            console.log(spf('created NPC %s %s', npc.klassName, npc.name));
+            console.log(spf('created NPC %s %s', npc.klass.name, npc.name));
 
             map.getTile(xs[count], ys[count])[0].index = 1;
         }
@@ -184,13 +183,13 @@ exports = Game = Class(GC.Application, function () {
         var map = this._isometric.getMap(),
             concrete_line = [11, 11, 11];
 
-        this._generateCharacters(3);
+        this._generateCharacters(1);
         this._generateNPCs(3);
 
         this.scene = new Scene({
             characters: this.characters,
             npcs: this.npcs
-        }).on('Battle', bind(this, 'onMessage'));
+        }).on('scene:battleBegin', bind(this, 'onMessage'));
 
         map.drawLineHorizontal(0, 0, 0, 36, gameConstants.tileGroups.IMPASSABLE,
             concrete_line);
@@ -204,6 +203,7 @@ exports = Game = Class(GC.Application, function () {
         this._isometric.refreshMap();
 
         this.scene.battle();
+
 
     };
 
@@ -320,7 +320,9 @@ exports = Game = Class(GC.Application, function () {
     };
 
     this.onNPCBeginTurn = function(npc) {
-        var defender = npc.chooseTarget(this.characters);
+        npc.chooseTarget(this.characters);
+        npc.attackAndOrMove();
+
     };
 
     this.onPass = function () {
